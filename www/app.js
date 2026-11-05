@@ -1096,6 +1096,9 @@ function showIosAlert(title, message, okText, onOkCallback) {
     okBtn.textContent = okText;
     okBtn.style.display = 'inline-block';
     pendingConfirmCallback = onOkCallback;
+    // Pastikan tombol Batal kembali terlihat untuk dialog konfirmasi
+    const cancelBtnAlert = document.getElementById('iosConfirmCancelBtn');
+    if (cancelBtnAlert) cancelBtnAlert.style.display = 'inline-block';
     document.getElementById('iosConfirmModal').classList.add('show');
 }
 
@@ -1104,8 +1107,11 @@ function showIosNotice(title, message) {
     document.getElementById('iosConfirmMessage').textContent = message;
     const okBtn = document.getElementById('iosConfirmOkBtn');
     okBtn.textContent = "OK";
-    okBtn.style.display = 'none';
-    pendingConfirmCallback = null;
+    okBtn.style.display = 'inline-block';
+    okBtn.style.background = 'var(--ios-blue)';
+    // Sembunyikan tombol Batal untuk notice (bukan konfirmasi)
+    const cancelBtnNotice = document.getElementById('iosConfirmCancelBtn');
+    if (cancelBtnNotice) cancelBtnNotice.style.display = 'none';
     document.getElementById('iosConfirmModal').classList.add('show');
 }
 
