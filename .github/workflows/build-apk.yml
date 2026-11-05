@@ -34,14 +34,20 @@ jobs:
     - name: Build Web App
       run: npm run build
 
+    - name: Inject App Version
+      shell: bash
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          VERSION="${{ github.ref_name }}"
+        else
+          VERSION="dev-$(git rev-parse --short HEAD)"
+        fi
+
+        echo "Injecting version: $VERSION"
+        sed -i "s|__APP_VERSION__|$VERSION|g" dist/index.html
+
     - name: Sync Capacitor
       run: npx cap sync android
-
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '21'
 
     # --- GENERATE & GANTI IKON ALA IOS OTOMATIS ---
     # Langkah ini hanya dijalankan saat membuat Git Tag (misal v1.0.0)
@@ -60,17 +66,6 @@ jobs:
         else
           echo "Error: iOS icon asset missing. Build will use Capacitor default icon."
         fi
-
-    - name: Inject App Version
-      shell: bash
-      run: |
-        if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-          VERSION="${{ github.ref_name }}"
-        else
-          VERSION="dev-$(git rev-parse --short HEAD)"
-        fi
-        echo "Injecting version: $VERSION"
-        sed -i "s|__APP_VERSION__|$VERSION|g" www/index.html
 
     - name: Build APK with Gradle
       working-directory: ./android
