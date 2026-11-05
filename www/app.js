@@ -209,55 +209,59 @@ function initEventListeners() {
         });
     }
 
-    // Tombol Ekspor Data (Dioptimalkan agar langsung memicu Download Manager Android / Share Sheet)
+    // Tombol Ekspor Data dengan Capacitor Filesystem + Native Share
     if (exportDataBtn) {
         exportDataBtn.addEventListener('click', () => {
             showIosAlert(
                 "Ekspor Data",
-                "Apakah Anda ingin mengunduh file cadangan data (JSON) dari aplikasi ini?",
+                "Apakah Anda ingin membuat dan mengunduh file cadangan data (JSON)?",
                 "Unduh",
                 async () => {
                     try {
                         const dataStr = JSON.stringify(appState, null, 2);
                         const fileName = `pocketsmart_backup_${Date.now()}.json`;
-                        
-                        // Cek apakah di HP Android / Capacitor, gunakan Web Share API jika didukung (paling ampuh tembus ke folder HP)
-                        if (navigator.share && /android|iphone|ipad|ipod/i.test(navigator.userAgent)) {
-                            const file = new File([dataStr], fileName, { type: 'application/json' });
-                            try {
-                                await navigator.share({
-                                    title: 'Backup PocketSmart',
-                                    text: 'File cadangan data keuangan PocketSmart',
-                                    files: [file]
-                                });
-                                showIosNotice("Berhasil", "File cadangan berhasil dibagikan/disimpan!");
-                                return;
-                            } catch (shareErr) {
-                                // Jika user cancel share, lanjut ke metode download biasa
-                                if (shareErr.name !== 'AbortError') console.log(shareErr);
-                            }
-                        }
 
-                        // Metode Download Blob Standar WebView
-                        const blob = new Blob([dataStr], { type: 'application/json' });
-                        const url = URL.createObjectURL(blob);
-                        
-                        const downloadAnchor = document.createElement('a');
-                        downloadAnchor.href = url;
-                        downloadAnchor.download = fileName;
-                        downloadAnchor.style.display = 'none';
-                        
-                        document.es = document.body.appendChild(downloadAnchor);
-                        downloadAnchor.click();
-                        
-                        setTimeout(() => {
-                            document.body.removeChild(downloadAnchor);
-                            URL.revokeObjectURL(url);
-                        }, 200);
-                        
-                        showIosNotice("Berhasil", "File cadangan berhasil diunduh! Cek folder Download di HPmu.");
+                        // Cek apakah berjalan di dalam aplikasi Android (Capacitor)
+                        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+                            const { Filesystem, Directory } = window.Capacitor.Plugins;
+                            
+                            // Tulis file ke Cache Directory aplikasi terlebih dahulu agar aman di Android
+                            const writeFileResult = await Filesystem.writeFile({
+                                path: fileName,
+                                data: dataStr,
+                                directory: Directory.Cache,
+                                encoding: 'utf8'
+                            });
+
+                            // Jika plugin Share tersedia, langsung panggil menu bagikan/simpan Android
+                            if (window.Capacitor.Plugins.Share) {
+                                await window.Capacitor.Plugins.Share.share({
+                                    title: 'Cadangan PocketSmart',
+                                    text: 'Simpan file JSON cadangan keuangan Anda',
+                                    url: writeFileResult.uri,
+                                    dialogTitle: 'Simpan File Backup'
+                                });
+                                showIosNotice("Berhasil", "Menu penyimpanan file telah dibuka. Silakan pilih 'Simpan ke Drive' atau 'Unduhan'.");
+                            } else {
+                                showIosNotice("Berhasil Disimpan", "File tersimpan di Cache: " + writeFileResult.uri);
+                            }
+                        } else {
+                            // Fallback untuk mode web browser biasa
+                            const blob = new Blob([dataStr], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const downloadAnchor = document.createElement('a');
+                            downloadAnchor.href = url;
+                            downloadAnchor.download = fileName;
+                            document.body.appendChild(downloadAnchor);
+                            downloadAnchor.click();
+                            setTimeout(() => {
+                                document.body.removeChild(downloadAnchor);
+                                URL.revokeObjectURL(url);
+                            }, 100);
+                            showIosNotice("Berhasil", "File cadangan berhasil diunduh!");
+                        }
                     } catch (err) {
-                        showIosNotice("Gagal Menyimpan", "Terjadi kesalahan: " + (err.message || "Gagal menulis file."));
+                        showIosNotice("Gagal Mengunduh", "Terjadi kesalahan: " + (err.message || "Gagal memproses file."));
                     }
                 }
             );
