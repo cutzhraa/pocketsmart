@@ -209,7 +209,7 @@ function initEventListeners() {
         });
     }
 
-    // Tombol Ekspor Data
+    // Tombol Ekspor Data (Diperbarui dengan Blob URL agar optimal di Android APK)
     if (exportDataBtn) {
         exportDataBtn.addEventListener('click', () => {
             showIosAlert(
@@ -217,13 +217,27 @@ function initEventListeners() {
                 "Apakah Anda ingin mengunduh file cadangan data (JSON) dari aplikasi ini?",
                 "Unduh",
                 () => {
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-                    const downloadAnchor = document.createElement('a');
-                    downloadAnchor.setAttribute("href", dataStr);
-                    downloadAnchor.setAttribute("download", "pocketsmart_backup.json");
-                    document.body.appendChild(downloadAnchor);
-                    downloadAnchor.click();
-                    downloadAnchor.remove();
+                    try {
+                        const dataStr = JSON.stringify(appState, null, 2);
+                        const blob = new Blob([dataStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        
+                        const downloadAnchor = document.createElement('a');
+                        downloadAnchor.href = url;
+                        downloadAnchor.download = "pocketsmart_backup.json";
+                        
+                        document.body.appendChild(downloadAnchor);
+                        downloadAnchor.click();
+                        
+                        setTimeout(() => {
+                            document.body.removeChild(downloadAnchor);
+                            URL.revokeObjectURL(url);
+                        }, 100);
+                        
+                        showIosNotice("Berhasil", "File cadangan berhasil diunduh ke perangkat!");
+                    } catch (err) {
+                        showIosNotice("Gagal", "Terjadi kesalahan saat mengunduh file.");
+                    }
                 }
             );
             settingsModal.classList.remove('show');
