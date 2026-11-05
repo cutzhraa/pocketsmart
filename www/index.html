@@ -20,7 +20,6 @@
                 </div>
 
                 <div class="header-icons">
-                    <!-- Ikon Search Membuka Modal iOS -->
                     <button class="icon-btn-setting" id="searchHeaderBtn" aria-label="Cari Transaksi" style="color: #ffffff;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     </button>
@@ -123,10 +122,8 @@
                 <div class="settings-group">
                     <p class="settings-group-title">PENGELOLAAN DATA</p>
                     <button class="settings-item-btn" id="exportDataBtn">📥 Ekspor Cadangan Data (JSON)</button>
-                    <!-- Tombol & Input Tersembunyi untuk Restore Data -->
                     <button class="settings-item-btn" id="importDataBtn">📤 Pulihkan Cadangan Data (JSON)</button>
                     <input type="file" id="importFileinput" accept=".json" style="display: none;">
-                    
                     <button class="settings-item-btn text-danger" id="resetDataBtn">🗑️ Reset Semua Data (Versi 0)</button>
                 </div>
                 <div class="settings-group">
@@ -186,17 +183,7 @@
 
     <style>
         .calc-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: none;
-            font-size: 22px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.2s;
+            width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 22px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s;
         }
         .calc-btn:active { opacity: 0.7; }
         .ios-calc-gray { background: #a5a5a5; color: #000000; }
@@ -212,7 +199,7 @@
                 <button class="close-modal-btn" id="closeTrxModalBtn">✕</button>
             </div>
             <div class="modal-body">
-                <p style="font-size: 11px; color: var(--ios-sublabel); margin-bottom: 10px; text-align: center;">💡 Riwayat seluruh pemasukan & pengeluaran</p>
+                <p style="font-size: 11px; color: var(--ios-sublabel); margin-bottom: 10px; text-align: center;">💡 Geser Kanan (Edit) atau Geser Kiri (Hapus)</p>
                 <div class="wallet-list-container" id="fullTransactionListContainer">
                     <div style="text-align: center; color: var(--ios-sublabel); font-size: 13px; padding: 20px 0;">Belum ada transaksi tercatat.</div>
                 </div>
@@ -220,7 +207,7 @@
         </div>
     </div>
 
-    <!-- Modal / Pop-up Form Tambah Transaksi -->
+    <!-- Modal / Pop-up Form Tambah Transaksi (Dropdown Ala iOS) -->
     <div class="modal-overlay" id="formTransactionModal">
         <div class="ios-modal">
             <div class="modal-header">
@@ -230,18 +217,27 @@
             <div class="modal-body">
                 <div class="settings-group">
                     <p class="settings-group-title">TIPE TRANSAKSI</p>
-                    <select id="trxTypeInput" class="ios-text-input" style="cursor: pointer;">
-                        <option value="expense">Pengeluaran</option>
-                        <option value="income">Pemasukan</option>
-                    </select>
+                    <button type="button" id="selectTrxTypeBtn" class="ios-text-input" style="text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                        <span id="selectedTrxTypeText">Pengeluaran</span>
+                        <span style="color: var(--ios-sublabel);">▾</span>
+                    </button>
+                    <input type="hidden" id="trxTypeInput" value="expense">
                 </div>
                 <div class="settings-group">
                     <p class="settings-group-title">SUMBER DOMPET</p>
-                    <select id="trxWalletInput" class="ios-text-input" style="cursor: pointer;"></select>
+                    <button type="button" id="selectTrxWalletBtn" class="ios-text-input" style="text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                        <span id="selectedTrxWalletText">Pilih Dompet</span>
+                        <span style="color: var(--ios-sublabel);">▾</span>
+                    </button>
+                    <input type="hidden" id="trxWalletInput" value="">
                 </div>
                 <div class="settings-group">
                     <p class="settings-group-title">KATEGORI</p>
-                    <select id="trxCategoryInput" class="ios-text-input" style="cursor: pointer;"></select>
+                    <button type="button" id="selectTrxCategoryBtn" class="ios-text-input" style="text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                        <span id="selectedTrxCategoryText">Pilih Kategori</span>
+                        <span style="color: var(--ios-sublabel);">▾</span>
+                    </button>
+                    <input type="hidden" id="trxCategoryInput" value="">
                 </div>
                 <div class="settings-group">
                     <p class="settings-group-title">JUMLAH NOMINAL (RP)</p>
@@ -496,6 +492,14 @@
                 <button class="settings-item-btn" id="iosConfirmCancelBtn" style="text-align: center; background: var(--ios-card-secondary); color: var(--ios-label); margin-bottom: 0;">Batal</button>
                 <button class="settings-item-btn" id="iosConfirmOkBtn" style="text-align: center; background: var(--ios-red); color: #ffffff; font-weight: 600; margin-bottom: 0;">Hapus</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Custom iOS Action Sheet Pop-up (Untuk Dropdown Ala iOS) -->
+    <div class="ios-action-sheet-overlay" id="iosActionSheetModal">
+        <div class="ios-action-sheet">
+            <div class="ios-action-sheet-group" id="actionSheetOptionsContainer"></div>
+            <button class="ios-action-sheet-cancel" id="closeActionSheetBtn">Batal</button>
         </div>
     </div>
 
