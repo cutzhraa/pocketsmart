@@ -1,7 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
     repositories {
         google()
         mavenCentral()
@@ -22,24 +21,14 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // Paksa seluruh modul kompiler Java ke versi 17 secara aman
+    tasks.withType(JavaCompile).configureEach {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-subprojects {
-    afterEvaluate { project ->
-        // Hanya atur jika modul memiliki ekstensi android (Android Library / App)
-        if (project.hasProperty("android")) {
-            try {
-                project.android {
-                    compileOptions {
-                        sourceCompatibility JavaVersion.VERSION_21
-                        targetCompatibility JavaVersion.VERSION_21
-                    }
-                }
-            } catch (ignored) {}
-        }
-    }
 }
