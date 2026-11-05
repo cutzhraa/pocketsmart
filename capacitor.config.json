@@ -1,6 +1,6 @@
 {
   "appId": "com.cutzhraa.pocketsmart",
   "appName": "PocketSmart",
-  "webDir": "www",
+  "webDir": "dist",
   "bundledWebRuntime": false
 }

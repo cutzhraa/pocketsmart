@@ -1,4 +1,7 @@
-﻿// Inisialisasi State Aplikasi (Versi 0 / Bersih dari awal)
+﻿import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+// Inisialisasi State Aplikasi (Versi 0 / Bersih dari awal)
 let appState = {
     balance: 0,
     totalIncome: 0,
@@ -209,60 +212,70 @@ function initEventListeners() {
         });
     }
 
-    // Tombol Ekspor Data dengan Capacitor Filesystem + Native Share
+    
+    // Tombol Ekspor Data
     if (exportDataBtn) {
         exportDataBtn.addEventListener('click', () => {
             settingsModal.classList.remove('show');
+
             showIosAlert(
                 "Ekspor Data",
-                "Apakah Anda ingin membuat dan mengunduh file cadangan data (JSON)?",
+                "Apakah Anda ingin membuat file cadangan data (JSON)?",
                 "Unduh",
                 async () => {
                     try {
                         const dataStr = JSON.stringify(appState, null, 2);
                         const fileName = `pocketsmart_backup_${Date.now()}.json`;
 
-                        // Cek apakah berjalan di dalam aplikasi Android (Capacitor)
-                        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
-                            const { Filesystem, Directory } = window.Capacitor.Plugins;
-                            
-                            // Tulis file ke Documents Directory agar bisa diakses oleh user
-                            const writeFileResult = await Filesystem.writeFile({
+                        if (Capacitor.isNativePlatform()) {
+                            const result = await Filesystem.writeFile({
                                 path: fileName,
                                 data: dataStr,
                                 directory: Directory.Documents,
                                 encoding: 'utf8'
                             });
 
-                            // Jika plugin Share tersedia, langsung panggil menu bagikan/simpan Android
-                            if (window.Capacitor.Plugins.Share) {
-                                await window.Capacitor.Plugins.Share.share({
-                                    title: 'Cadangan PocketSmart',
-                                    text: 'Simpan file JSON cadangan keuangan Anda',
-                                    url: writeFileResult.uri,
-                                    dialogTitle: 'Simpan File Backup'
-                                });
-                                showIosNotice("Berhasil", "Menu penyimpanan file telah dibuka. Silakan pilih 'Simpan ke Drive' atau 'Unduhan'.");
-                            } else {
-                                showIosNotice("Berhasil Disimpan", "File tersimpan di: " + writeFileResult.uri);
-                            }
+                            await Share.share({
+                                title: 'Cadangan PocketSmart',
+                                text: 'File cadangan data keuangan PocketSmart',
+                                url: result.uri,
+                                dialogTitle: 'Simpan File Backup'
+                            });
+
+                            showIosNotice(
+                                "Berhasil",
+                                "File backup berhasil dibuat. Pilih aplikasi penyimpanan pada menu berbagi untuk menyimpan file."
+                            );
                         } else {
-                            // Fallback untuk mode web browser biasa
-                            const blob = new Blob([dataStr], { type: 'application/json' });
+                            const blob = new Blob(
+                                [dataStr],
+                                { type: 'application/json' }
+                            );
+
                             const url = URL.createObjectURL(blob);
-                            const downloadAnchor = document.createElement('a');
-                            downloadAnchor.href = url;
-                            downloadAnchor.download = fileName;
-                            document.body.appendChild(downloadAnchor);
-                            downloadAnchor.click();
-                            setTimeout(() => {
-                                document.body.removeChild(downloadAnchor);
-                                URL.revokeObjectURL(url);
-                            }, 100);
-                            showIosNotice("Berhasil", "File cadangan berhasil diunduh!");
+                            const anchor = document.createElement('a');
+
+                            anchor.href = url;
+                            anchor.download = fileName;
+
+                            document.body.appendChild(anchor);
+                            anchor.click();
+                            document.body.removeChild(anchor);
+
+                            URL.revokeObjectURL(url);
+
+                            showIosNotice(
+                                "Berhasil",
+                                "File cadangan berhasil diunduh!"
+                            );
                         }
                     } catch (err) {
-                        showIosNotice("Gagal Mengunduh", "Terjadi kesalahan: " + (err.message || "Gagal memproses file."));
+                        console.error("Export error:", err);
+
+                        showIosNotice(
+                            "Gagal Mengunduh",
+                            "Terjadi kesalahan: " + (err.message || "Gagal membuat file backup.")
+                        );
                     }
                 }
             );
