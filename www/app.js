@@ -1,4 +1,4 @@
-// Inisialisasi State Aplikasi (Versi 0 / Bersih dari awal)
+﻿// Inisialisasi State Aplikasi (Versi 0 / Bersih dari awal)
 let appState = {
     balance: 0,
     totalIncome: 0,
@@ -212,6 +212,7 @@ function initEventListeners() {
     // Tombol Ekspor Data dengan Capacitor Filesystem + Native Share
     if (exportDataBtn) {
         exportDataBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('show');
             showIosAlert(
                 "Ekspor Data",
                 "Apakah Anda ingin membuat dan mengunduh file cadangan data (JSON)?",
@@ -225,11 +226,11 @@ function initEventListeners() {
                         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
                             const { Filesystem, Directory } = window.Capacitor.Plugins;
                             
-                            // Tulis file ke Cache Directory aplikasi terlebih dahulu agar aman di Android
+                            // Tulis file ke Documents Directory agar bisa diakses oleh user
                             const writeFileResult = await Filesystem.writeFile({
                                 path: fileName,
                                 data: dataStr,
-                                directory: Directory.Cache,
+                                directory: Directory.Documents,
                                 encoding: 'utf8'
                             });
 
@@ -243,7 +244,7 @@ function initEventListeners() {
                                 });
                                 showIosNotice("Berhasil", "Menu penyimpanan file telah dibuka. Silakan pilih 'Simpan ke Drive' atau 'Unduhan'.");
                             } else {
-                                showIosNotice("Berhasil Disimpan", "File tersimpan di Cache: " + writeFileResult.uri);
+                                showIosNotice("Berhasil Disimpan", "File tersimpan di: " + writeFileResult.uri);
                             }
                         } else {
                             // Fallback untuk mode web browser biasa
@@ -265,7 +266,6 @@ function initEventListeners() {
                     }
                 }
             );
-            settingsModal.classList.remove('show');
         });
     }
 
@@ -998,7 +998,7 @@ function renderSearchResults(keyword) {
         item.innerHTML = `
             <div>
                 <h4 class="trx-item-title">${trx.note}</h4>
-                <p class="trx-item-subtitle">${trx.walletName} • ${trx.categoryName} • ${trx.date}</p>
+                <p class="trx-item-subtitle">${trx.walletName} â€¢ ${trx.categoryName} â€¢ ${trx.date}</p>
             </div>
             <div class="trx-item-amount" style="color: ${amountColor};">${sign}Rp ${trx.amount.toLocaleString('id-ID')}</div>
         `;
@@ -1077,7 +1077,7 @@ function renderFullTransactions() {
         item.innerHTML = `
             <div>
                 <h4 class="trx-item-title">${trx.note}</h4>
-                <p class="trx-item-subtitle">${trx.walletName} • ${trx.categoryName} • ${trx.date}</p>
+                <p class="trx-item-subtitle">${trx.walletName} â€¢ ${trx.categoryName} â€¢ ${trx.date}</p>
             </div>
             <div style="text-align: right;">
                 <div class="trx-item-amount" style="color: ${amountColor};">${sign}Rp ${trx.amount.toLocaleString('id-ID')}</div>
@@ -1246,32 +1246,32 @@ function closeTargetFormModal() {
 function getWalletIcon(name) {
     const lowerName = name.toLowerCase();
     if (lowerName.includes('cash') || lowerName.includes('tunai') || lowerName.includes('saku')) {
-        return '💵';
+        return 'ðŸ’µ';
     } else if (lowerName.includes('bca') || lowerName.includes('bni') || lowerName.includes('bri') || lowerName.includes('mandiri') || lowerName.includes('bank') || lowerName.includes('rekening')) {
-        return '💳';
+        return 'ðŸ’³';
     } else if (lowerName.includes('dana') || lowerName.includes('gopay') || lowerName.includes('ovo') || lowerName.includes('qris') || lowerName.includes('shopeepay') || lowerName.includes('wallet')) {
-        return '📱';
+        return 'ðŸ“±';
     } else if (lowerName.includes('emas') || lowerName.includes('gold') || lowerName.includes('invest')) {
-        return '🪙';
+        return 'ðŸª™';
     } else {
-        return '👛';
+        return 'ðŸ‘›';
     }
 }
 
 // Deteksi Ikon Kategori
 function getCategoryIcon(name) {
     const lower = name.toLowerCase();
-    if (lower.includes('makan') || lower.includes('minum') || lower.includes('kuliner')) return '🍔';
-    if (lower.includes('transport') || lower.includes('bensin') || lower.includes('parkir')) return '🚗';
-    if (lower.includes('gaji') || lower.includes('salary')) return '💰';
-    if (lower.includes('freelance') || lower.includes('project')) return '💻';
-    if (lower.includes('belanja') || lower.includes('shop') || lower.includes('lifestyle')) return '🛍️';
-    if (lower.includes('tagihan') || lower.includes('listrik') || lower.includes('wifi') || lower.includes('utilitas')) return '⚡';
-    if (lower.includes('sehat') || lower.includes('kesehatan') || lower.includes('obat')|| lower.includes('dokter')) return '💊';
-    if (lower.includes('cicilan') || lower.includes('utang') || lower.includes('pinjam')) return '🧾';
-    if (lower.includes('invest') || lower.includes('saham') || lower.includes('reksa')) return '📈';
-    if (lower.includes('hadiah') || lower.includes('lain') || lower.includes('bonus')) return '🎁';
-    return '🏷️';
+    if (lower.includes('makan') || lower.includes('minum') || lower.includes('kuliner')) return 'ðŸ”';
+    if (lower.includes('transport') || lower.includes('bensin') || lower.includes('parkir')) return 'ðŸš—';
+    if (lower.includes('gaji') || lower.includes('salary')) return 'ðŸ’°';
+    if (lower.includes('freelance') || lower.includes('project')) return 'ðŸ’»';
+    if (lower.includes('belanja') || lower.includes('shop') || lower.includes('lifestyle')) return 'ðŸ›ï¸';
+    if (lower.includes('tagihan') || lower.includes('listrik') || lower.includes('wifi') || lower.includes('utilitas')) return 'âš¡';
+    if (lower.includes('sehat') || lower.includes('kesehatan') || lower.includes('obat')|| lower.includes('dokter')) return 'ðŸ’Š';
+    if (lower.includes('cicilan') || lower.includes('utang') || lower.includes('pinjam')) return 'ðŸ§¾';
+    if (lower.includes('invest') || lower.includes('saham') || lower.includes('reksa')) return 'ðŸ“ˆ';
+    if (lower.includes('hadiah') || lower.includes('lain') || lower.includes('bonus')) return 'ðŸŽ';
+    return 'ðŸ·ï¸';
 }
 
 // Render daftar dompet
@@ -1290,8 +1290,8 @@ function renderWalletList() {
         const wrapper = document.createElement('div');
         wrapper.className = 'wallet-swipe-wrapper';
         wrapper.innerHTML = `
-            <div class="wallet-swipe-action-left" data-id="${wallet.id}">✏️</div>
-            <div class="wallet-swipe-action-right" data-id="${wallet.id}">🗑️</div>
+            <div class="wallet-swipe-action-left" data-id="${wallet.id}">âœï¸</div>
+            <div class="wallet-swipe-action-right" data-id="${wallet.id}">ðŸ—‘ï¸</div>
             <div class="wallet-item-card" data-id="${wallet.id}">
                 <div class="wallet-left">
                     <div class="wallet-icon-box">${icon}</div>
@@ -1367,8 +1367,8 @@ function renderCategoryList() {
         const wrapper = document.createElement('div');
         wrapper.className = 'wallet-swipe-wrapper';
         wrapper.innerHTML = `
-            <div class="wallet-swipe-action-left" data-id="${cat.id}">✏️</div>
-            <div class="wallet-swipe-action-right" data-id="${cat.id}">🗑️</div>
+            <div class="wallet-swipe-action-left" data-id="${cat.id}">âœï¸</div>
+            <div class="wallet-swipe-action-right" data-id="${cat.id}">ðŸ—‘ï¸</div>
             <div class="wallet-item-card" data-id="${cat.id}">
                 <div class="wallet-left">
                     <div class="wallet-icon-box">${icon}</div>
@@ -1438,15 +1438,15 @@ function renderDebtList() {
     container.innerHTML = '';
     appState.debts.forEach(debt => {
         const isDebt = debt.type === 'debt';
-        const icon = isDebt ? '📤' : '📥';
+        const icon = isDebt ? 'ðŸ“¤' : 'ðŸ“¥';
         const typeBadge = isDebt ? 'Utang' : 'Piutang';
         const badgeColor = isDebt ? 'var(--ios-red)' : 'var(--ios-green)';
 
         const wrapper = document.createElement('div');
         wrapper.className = 'wallet-swipe-wrapper';
         wrapper.innerHTML = `
-            <div class="wallet-swipe-action-left" data-id="${debt.id}">✏️</div>
-            <div class="wallet-swipe-action-right" data-id="${debt.id}">🗑️</div>
+            <div class="wallet-swipe-action-left" data-id="${debt.id}">âœï¸</div>
+            <div class="wallet-swipe-action-right" data-id="${debt.id}">ðŸ—‘ï¸</div>
             <div class="wallet-item-card" data-id="${debt.id}">
                 <div class="wallet-left">
                     <div class="wallet-icon-box">${icon}</div>
@@ -1521,12 +1521,12 @@ function renderTargetList() {
         const wrapper = document.createElement('div');
         wrapper.className = 'wallet-swipe-wrapper';
         wrapper.innerHTML = `
-            <div class="wallet-swipe-action-left" data-id="${target.id}">✏️</div>
-            <div class="wallet-swipe-action-right" data-id="${target.id}">🗑️</div>
+            <div class="wallet-swipe-action-left" data-id="${target.id}">âœï¸</div>
+            <div class="wallet-swipe-action-right" data-id="${target.id}">ðŸ—‘ï¸</div>
             <div class="wallet-item-card" data-id="${target.id}" style="flex-direction: column; align-items: stretch; padding: 14px 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="wallet-icon-box" style="margin-bottom: 0;">🎯</div>
+                        <div class="wallet-icon-box" style="margin-bottom: 0;">ðŸŽ¯</div>
                         <div>
                             <h4 style="font-size: 14px; font-weight: 600; color: #ffffff; line-height: 1.2;">${target.name}</h4>
                             <p style="font-size: 11px; color: var(--ios-sublabel); margin-top: 2px;">Terkumpul: Rp ${target.currentAmount.toLocaleString('id-ID')}</p>
@@ -1687,15 +1687,15 @@ function updateUI() {
     const transactionListContainer = document.getElementById('transactionList');
 
     if (balanceElement) {
-        balanceElement.textContent = appState.isBalanceHidden ? "Rp •••••••" : "Rp " + appState.balance.toLocaleString('id-ID');
+        balanceElement.textContent = appState.isBalanceHidden ? "Rp â€¢â€¢â€¢â€¢â€¢â€¢â€¢" : "Rp " + appState.balance.toLocaleString('id-ID');
     }
 
     if (incomeElement) {
-        incomeElement.textContent = appState.isBalanceHidden ? "+Rp •••••••" : "+Rp " + appState.totalIncome.toLocaleString('id-ID');
+        incomeElement.textContent = appState.isBalanceHidden ? "+Rp â€¢â€¢â€¢â€¢â€¢â€¢â€¢" : "+Rp " + appState.totalIncome.toLocaleString('id-ID');
     }
 
     if (expenseElement) {
-        expenseElement.textContent = appState.isBalanceHidden ? "-Rp •••••••" : "-Rp " + appState.totalExpense.toLocaleString('id-ID');
+        expenseElement.textContent = appState.isBalanceHidden ? "-Rp â€¢â€¢â€¢â€¢â€¢â€¢â€¢" : "-Rp " + appState.totalExpense.toLocaleString('id-ID');
     }
 
     if (transactionListContainer) {
@@ -1718,7 +1718,7 @@ function updateUI() {
                 item.innerHTML = `
                     <div>
                         <h4 class="trx-item-title">${trx.note}</h4>
-                        <p class="trx-item-subtitle">${trx.walletName} • ${trx.categoryName}</p>
+                        <p class="trx-item-subtitle">${trx.walletName} â€¢ ${trx.categoryName}</p>
                     </div>
                     <div class="trx-item-amount" style="color: ${amountColor};">${sign}Rp ${trx.amount.toLocaleString('id-ID')}</div>
                 `;
