@@ -30,8 +30,9 @@ body {
     padding: 16px;
 }
 
-/* Header & Top Bar */
+/* Header & Top Bar (Ditambah jarak aman atas agar tidak ketutupan status bar HP) */
 .header {
+    margin-top: 16px;
     margin-bottom: 16px;
 }
 
