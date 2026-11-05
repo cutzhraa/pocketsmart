@@ -41,7 +41,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '21'
 
     # --- GENERATE & GANTI IKON ALA IOS OTOMATIS ---
     # Langkah ini hanya dijalankan saat membuat Git Tag (misal v1.0.0)
