@@ -57,50 +57,47 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
 });
 
-// Inisialisasi Dropdown Pemilih Bulan
+// Inisialisasi Pemilih Bulan Menggunakan Action Sheet Ala iOS
 function initMonthSelector() {
-    const selectorBtn = document.getElementById('monthSelectorBtn');
-    const dropdownMenu = document.getElementById('monthDropdownMenu');
-    
     updateMonthLabel();
 
-    if (!dropdownMenu) return;
-    dropdownMenu.innerHTML = '';
-    
-    // Buat daftar pilihan bulan (misal rentang tahun saat ini dan tahun sebelumnya/sesudahnya)
-    const currentYear = new Date().getFullYear();
-    const years = [currentYear - 1, currentYear, currentYear + 1];
+    const selectorBtn = document.getElementById('monthSelectorBtn');
+    const actionSheetModal = document.getElementById('iosActionSheetModal');
+    const actionSheetContainer = document.getElementById('actionSheetOptionsContainer');
 
-    years.forEach(year => {
-        monthNames.forEach((month, index) => {
-            const item = document.createElement('div');
-            item.className = `dropdown-item ${index === appState.selectedMonth && year === appState.selectedYear ? 'active' : ''}`;
-            item.textContent = `${month} ${year}`;
-            item.addEventListener('click', () => {
-                appState.selectedMonth = index;
-                appState.selectedYear = year;
-                updateMonthLabel();
-                initMonthSelector();
-                dropdownMenu.classList.remove('show');
-                saveData();
-                updateUI();
+    if (selectorBtn && actionSheetModal && actionSheetContainer) {
+        selectorBtn.onclick = () => {
+            actionSheetContainer.innerHTML = '';
+            
+            const currentYear = new Date().getFullYear();
+            const years = [currentYear - 1, currentYear, currentYear + 1];
+
+            years.forEach(year => {
+                monthNames.forEach((month, index) => {
+                    const item = document.createElement('button');
+                    item.className = 'ios-action-sheet-item';
+                    if (index === appState.selectedMonth && year === appState.selectedYear) {
+                        item.style.fontWeight = '700';
+                        item.textContent = `✓ ${month} ${year}`;
+                    } else {
+                        item.textContent = `${month} ${year}`;
+                    }
+
+                    item.addEventListener('click', () => {
+                        appState.selectedMonth = index;
+                        appState.selectedYear = year;
+                        updateMonthLabel();
+                        saveData();
+                        updateUI();
+                        actionSheetModal.classList.remove('show');
+                    });
+                    actionSheetContainer.appendChild(item);
+                });
             });
-            dropdownMenu.appendChild(item);
-        });
-    });
 
-    if (selectorBtn) {
-        selectorBtn.onclick = (e) => {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('show');
+            actionSheetModal.classList.add('show');
         };
     }
-
-    window.onclick = (e) => {
-        if (!e.target.closest('.month-selector-container')) {
-            dropdownMenu.classList.remove('show');
-        }
-    };
 }
 
 function updateMonthLabel() {
@@ -110,7 +107,7 @@ function updateMonthLabel() {
     }
 }
 
-// Filter transaksi berdasarkan bulan dan tahun yang sedang aktif
+// Filter transaksi berdasarkan bulan dan tahun aktif
 function getFilteredTransactions() {
     if (!appState.transactions) return [];
     return appState.transactions.filter(t => {
@@ -794,7 +791,7 @@ function initEventListeners() {
     }
 }
 
-// Action Sheet Dropdowns
+// Action Sheet Dropdowns (Form Transaksi)
 function setupActionSheetDropdowns() {
     const actionSheetModal = document.getElementById('iosActionSheetModal');
     const actionSheetContainer = document.getElementById('actionSheetOptionsContainer');
