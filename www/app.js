@@ -209,34 +209,51 @@ function initEventListeners() {
         });
     }
 
-    // Tombol Ekspor Data (Diperbarui dengan Blob URL agar optimal di Android APK)
+    // Tombol Ekspor Data (Support APK & Web dengan Notifikasi UI)
     if (exportDataBtn) {
         exportDataBtn.addEventListener('click', () => {
             showIosAlert(
                 "Ekspor Data",
                 "Apakah Anda ingin mengunduh file cadangan data (JSON) dari aplikasi ini?",
                 "Unduh",
-                () => {
+                async () => {
                     try {
                         const dataStr = JSON.stringify(appState, null, 2);
-                        const blob = new Blob([dataStr], { type: 'application/json' });
-                        const url = URL.createObjectURL(blob);
                         
-                        const downloadAnchor = document.createElement('a');
-                        downloadAnchor.href = url;
-                        downloadAnchor.download = "pocketsmart_backup.json";
-                        
-                        document.body.appendChild(downloadAnchor);
-                        downloadAnchor.click();
-                        
-                        setTimeout(() => {
-                            document.body.removeChild(downloadAnchor);
-                            URL.revokeObjectURL(url);
-                        }, 100);
-                        
-                        showIosNotice("Berhasil", "File cadangan berhasil diunduh ke perangkat!");
+                        // Cek apakah berjalan di lingkungan Capacitor (Android APK)
+                        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+                            const { Filesystem, Directory } = window.Capacitor.Plugins;
+                            const fileName = `pocketsmart_backup_${Date.now()}.json`;
+                            
+                            await Filesystem.writeFile({
+                                path: fileName,
+                                data: dataStr,
+                                directory: Directory.Documents,
+                                encoding: 'utf8'
+                            });
+                            
+                            showIosNotice("Berhasil Disimpan", `File cadangan berhasil disimpan ke folder Dokumen perangkat!\nNama file: ${fileName}`);
+                        } else {
+                            // Fallback untuk mode browser web biasa
+                            const blob = new Blob([dataStr], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            
+                            const downloadAnchor = document.createElement('a');
+                            downloadAnchor.href = url;
+                            downloadAnchor.download = "pocketsmart_backup.json";
+                            
+                            document.body.appendChild(downloadAnchor);
+                            downloadAnchor.click();
+                            
+                            setTimeout(() => {
+                                document.body.removeChild(downloadAnchor);
+                                URL.revokeObjectURL(url);
+                            }, 100);
+                            
+                            showIosNotice("Berhasil", "File cadangan berhasil diunduh ke perangkat!");
+                        }
                     } catch (err) {
-                        showIosNotice("Gagal", "Terjadi kesalahan saat mengunduh file.");
+                        showIosNotice("Gagal Menyimpan", "Terjadi kesalahan: " + (err.message || "Gagal menulis file ke penyimpanan."));
                     }
                 }
             );
