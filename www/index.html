@@ -299,6 +299,30 @@
         </div>
     </div>
 
+    <!-- Modal / Pop-up Tambah Dompet Baru (Gaya iOS) -->
+    <div class="modal-overlay" id="addWalletModal">
+        <div class="ios-modal">
+            <div class="modal-header">
+                <h3>Tambah Dompet Baru</h3>
+                <button class="close-modal-btn" id="closeAddWalletBtn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <p class="settings-group-title">NAMA DOMPET</p>
+                    <input type="text" id="newWalletNameInput" class="ios-text-input" placeholder="Contoh: Dompet BCA, E-Wallet...">
+                </div>
+                <div class="settings-group">
+                    <p class="settings-group-title">SALDO AWAL (RP)</p>
+                    <input type="text" id="newWalletBalanceInput" class="ios-text-input" placeholder="0">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="settings-item-btn" id="cancelAddWalletBtn" style="text-align: center; background: var(--ios-card-secondary); color: var(--ios-sublabel);">Batal</button>
+                    <button class="settings-item-btn" id="saveAddWalletBtn" style="text-align: center; background: var(--ios-blue); color: #ffffff; font-weight: 600;">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal / Pop-up Kelola Kategori -->
     <div class="modal-overlay" id="categoryModal">
         <div class="ios-modal">
@@ -503,7 +527,7 @@
         </div>
         <div class="nav-item" id="navSettingsBtn">
             <span class="nav-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </span>
             <span>Setelan</span>
         </div>
