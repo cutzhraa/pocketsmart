@@ -1,0 +1,26 @@
+{
+  "name": "pocketsmart",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cutzhraa/pocketsmart.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/cutzhraa/pocketsmart/issues"
+  },
+  "homepage": "https://github.com/cutzhraa/pocketsmart#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/core": "^8.6.0"
+  }
+}

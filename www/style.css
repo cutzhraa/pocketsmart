@@ -1,0 +1,720 @@
+:root {
+    --ios-bg: #000000;
+    --ios-card: #1c1c1e;
+    --ios-card-secondary: #2c2c2e;
+    --ios-label: #ffffff;
+    --ios-sublabel: #8e8e93;
+    --ios-blue: #0a84ff;
+    --ios-green: #30d158;
+    --ios-red: #ff453a;
+    --ios-separator: rgba(84, 84, 88, 0.65);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: #121212;
+    color: var(--ios-label);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Bungkus ala Layar iPhone */
+.app-container {
+    width: 100%;
+    max-width: 390px;
+    height: 100vh;
+    max-height: 844px;
+    background-color: var(--ios-bg);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-y: auto;
+    border-radius: 40px;
+    border: 8px solid #2c2c2e;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+}
+
+.app-container::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+/* iOS Header / Navigation Bar (DIKUNCI MATI) */
+.header {
+    padding: 15px 20px 10px 20px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.icon-btn-setting {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Styling Dropdown Bulan */
+.month-selector-container {
+    position: relative;
+    display: inline-block;
+}
+
+.month-selector-btn {
+    background: none;
+    border: none;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ios-blue);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    font-family: inherit;
+}
+
+.month-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 30px;
+    left: 0;
+    background: var(--ios-card-secondary);
+    border-radius: 14px;
+    width: 160px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    border: 0.5px solid var(--ios-separator);
+    z-index: 100;
+    overflow: hidden;
+    padding: 6px 0;
+}
+
+.month-dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--ios-label);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background: var(--ios-blue);
+    color: #ffffff;
+}
+
+.dropdown-item.active {
+    font-weight: 600;
+    color: var(--ios-blue);
+}
+
+/* Balance Card (DIKUNCI MATI) */
+.balance-card {
+    background: var(--ios-card);
+    padding: 18px;
+    border-radius: 16px;
+    margin-top: 5px;
+}
+
+.balance-title {
+    font-size: 13px;
+    color: var(--ios-sublabel);
+    font-weight: 400;
+}
+
+.balance-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 4px 0 12px 0;
+}
+
+.balance-amount {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.icon-eye-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ios-eye-icon {
+    width: 22px;
+    height: 22px;
+    stroke: var(--ios-sublabel);
+    transition: stroke 0.2s;
+}
+
+.icon-eye-btn:hover .ios-eye-icon {
+    stroke: var(--ios-blue);
+}
+
+.balance-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 0.5px solid var(--ios-separator);
+    padding-top: 10px;
+}
+
+.summary-item .label {
+    font-size: 11px;
+    color: var(--ios-sublabel);
+    display: block;
+}
+
+.summary-item .value {
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 2px;
+    display: block;
+}
+
+.value.income { color: var(--ios-green); }
+.value.expense { color: var(--ios-red); }
+
+.summary-divider {
+    width: 0.5px;
+    height: 20px;
+    background: var(--ios-separator);
+}
+
+/* Main Content Area */
+.main-content {
+    padding: 15px 20px;
+    flex: 1;
+    padding-bottom: 100px;
+}
+
+/* Quick Menu */
+.quick-menu {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+
+.menu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--ios-sublabel);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.menu-item:active {
+    transform: scale(0.92);
+}
+
+.menu-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--ios-card);
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    border: 0.5px solid var(--ios-separator);
+    transition: background 0.2s;
+}
+
+.menu-item:hover .menu-icon {
+    background: var(--ios-card-secondary);
+}
+
+/* Alert Card */
+.section-title, .section-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: -0.2px;
+}
+
+.alert-card {
+    background: var(--ios-card);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.alert-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alert-date {
+    background: var(--ios-card-secondary);
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.date-num {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ios-blue);
+}
+
+.date-mon {
+    display: block;
+    font-size: 9px;
+    color: var(--ios-sublabel);
+    font-weight: 600;
+}
+
+.alert-detail h4 {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.alert-detail p {
+    font-size: 12px;
+    color: var(--ios-sublabel);
+    margin-top: 1px;
+}
+
+.btn-pay {
+    background: var(--ios-blue);
+    color: #ffffff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* Transactions List */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.see-all {
+    font-size: 13px;
+    color: var(--ios-blue);
+}
+
+.transaction-list {
+    display: flex;
+    flex-direction: column;
+    background: var(--ios-card);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.transaction-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 0.5px solid var(--ios-separator);
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.trx-icon {
+    width: 38px;
+    height: 38px;
+    background: var(--ios-card-secondary);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+}
+
+.trx-detail {
+    flex: 1;
+}
+
+.trx-detail h4 {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.trx-detail p {
+    font-size: 12px;
+    color: var(--ios-sublabel);
+    margin-top: 1px;
+}
+
+.trx-amount {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Styling Tambahan untuk Card Transaksi Terbaru & Pencarian */
+.trx-item-row {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 0.5px solid var(--ios-separator);
+}
+
+.trx-item-row:last-child {
+    border-bottom: none;
+}
+
+.trx-item-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ios-label);
+}
+
+.trx-item-subtitle {
+    font-size: 12px;
+    color: var(--ios-sublabel);
+    margin-top: 1px;
+}
+
+.trx-item-amount {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Modal Setting & Wallet */
+.modal-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.ios-modal {
+    width: 100%;
+    background: #1c1c1e;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 20px;
+    max-height: 75vh;
+    overflow-y: auto;
+    border-top: 0.5px solid var(--ios-separator);
+    animation: slideUp 0.3s ease-out;
+}
+
+/* iOS Style Text Input for Modals */
+.ios-text-input {
+    width: 100%;
+    background: var(--ios-card-secondary);
+    border: 0.5px solid var(--ios-separator);
+    color: var(--ios-label);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.ios-text-input:focus {
+    border-color: var(--ios-blue);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 0.5px solid var(--ios-separator);
+    padding-bottom: 12px;
+}
+
+.modal-header h3 {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.close-modal-btn {
+    background: var(--ios-card-secondary);
+    border: none;
+    color: var(--ios-sublabel);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-group {
+    margin-bottom: 20px;
+}
+
+.settings-group-title {
+    font-size: 11px;
+    color: var(--ios-sublabel);
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.settings-item-btn {
+    width: 100%;
+    background: var(--ios-card-secondary);
+    border: none;
+    color: var(--ios-blue);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.settings-item-btn.text-danger {
+    color: var(--ios-red);
+}
+
+.settings-info-row {
+    background: var(--ios-card-secondary);
+    padding: 12px 16px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.info-val {
+    color: var(--ios-sublabel);
+}
+
+/* Two-Way Swipe iOS Style (Ikon di Balik Kartu) */
+.wallet-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+}
+
+.wallet-swipe-wrapper {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--ios-card-secondary);
+}
+
+/* Tombol Ikon Kiri (Edit) & Kanan (Hapus) */
+.wallet-swipe-action-left {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 75px;
+    background-color: var(--ios-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 20px;
+    z-index: 1;
+    cursor: pointer;
+}
+
+.wallet-swipe-action-right {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 75px;
+    background-color: var(--ios-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 20px;
+    z-index: 1;
+    cursor: pointer;
+}
+
+/* Kartu Utama Wallet (Foreground) */
+.wallet-item-card {
+    position: relative;
+    background: var(--ios-card);
+    padding: 12px 16px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 2;
+    transition: transform 0.2s ease-out;
+    touch-action: pan-y;
+}
+
+.wallet-item-card.swiped-right {
+    transform: translateX(75px);
+}
+
+.wallet-item-card.swiped-left {
+    transform: translateX(-75px);
+}
+
+.wallet-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wallet-icon-box {
+    width: 36px;
+    height: 36px;
+    background: #1c1c1e;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+}
+
+.wallet-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.wallet-info p {
+    font-size: 11px;
+    color: var(--ios-sublabel);
+    margin-top: 1px;
+}
+
+.wallet-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wallet-balance {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ios-green);
+}
+
+/* Bottom Nav */
+.bottom-nav {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    height: 75px;
+    background: rgba(28, 28, 30, 0.85);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-top: 0.5px solid var(--ios-separator);
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding-top: 10px;
+    z-index: 20;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: var(--ios-sublabel);
+}
+
+.nav-item.active {
+    color: var(--ios-blue);
+}
+
+.nav-icon {
+    font-size: 20px;
+}
+
+/* Floating Action Button */
+.fab-container {
+    position: relative;
+    top: -24px;
+}
+
+.fab-btn {
+    width: 54px;
+    height: 54px;
+    background: var(--ios-blue);
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    font-size: 30px;
+    font-weight: 300;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.fab-btn:active {
+    transform: scale(0.9);
+}
