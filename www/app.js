@@ -110,6 +110,8 @@ function initEventListeners() {
     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
     const resetDataBtn = document.getElementById('resetDataBtn');
     const exportDataBtn = document.getElementById('exportDataBtn');
+    const importDataBtn = document.getElementById('importDataBtn');
+    const importFileinput = document.getElementById('importFileinput');
 
     if (closeSettingsBtn && settingsModal) {
         closeSettingsBtn.addEventListener('click', () => {
@@ -228,6 +230,46 @@ function initEventListeners() {
         });
     }
 
+    // Tombol Pulihkan Data (Restore JSON)
+    if (importDataBtn && importFileinput) {
+        importDataBtn.addEventListener('click', () => {
+            importFileinput.click();
+        });
+
+        importFileinput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const parsedData = JSON.parse(event.target.result);
+                    if (parsedData && typeof parsedData === 'object' && parsedData.wallets) {
+                        showIosAlert(
+                            "Pulihkan Data",
+                            "File cadangan valid! Apakah Anda ingin memulihkan data ini? Data saat ini akan ditimpa.",
+                            "Pulihkan",
+                            () => {
+                                appState = parsedData;
+                                saveData();
+                                updateUI();
+                                initMonthSelector();
+                                showIosNotice("Berhasil", "Data keuangan berhasil dipulihkan!");
+                            }
+                        );
+                    } else {
+                        showIosNotice("Format Salah", "File JSON tidak valid atau bukan format cadangan PocketSmart.");
+                    }
+                } catch (err) {
+                    showIosNotice("Gagal Membaca", "Terjadi kesalahan saat membaca file JSON.");
+                }
+                importFileinput.value = ""; // Reset input file
+            };
+            reader.readAsText(file);
+            settingsModal.classList.remove('show');
+        });
+    }
+
     // Logika Modal Dompet
     const menuWallet = document.getElementById('menuWallet');
     const walletModal = document.getElementById('walletModal');
@@ -255,27 +297,52 @@ function initEventListeners() {
         });
     }
 
-    if (addWalletBtn) {
+    // LOGIKA MODAL TAMBAH DOMPET GAYA IOS (Pengganti Prompt Bawaan)
+    const addWalletModal = document.getElementById('addWalletModal');
+    const closeAddWalletBtn = document.getElementById('closeAddWalletBtn');
+    const cancelAddWalletBtn = document.getElementById('cancelAddWalletBtn');
+    const saveAddWalletBtn = document.getElementById('saveAddWalletBtn');
+
+    if (addWalletBtn && addWalletModal) {
         addWalletBtn.addEventListener('click', () => {
-            const walletName = prompt("Masukkan nama dompet baru (Contoh: Dana, Gopay, Mandiri, Cash):");
-            if (walletName && walletName.trim() !== "") {
-                const initialBalInput = prompt("Masukkan jumlah saldo awal (Boleh pakai titik/koma, misal: 1.000.000):", "0");
-                
-                if (initialBalInput !== null) {
-                    const cleanBalStr = initialBalInput.replace(/\D/g, '');
-                    const parsedBal = cleanBalStr === '' ? 0 : Number(cleanBalStr);
-                    
-                    const newWallet = {
-                        id: Date.now(),
-                        name: walletName.trim(),
-                        balance: parsedBal
-                    };
-                    appState.wallets.push(newWallet);
-                    saveData();
-                    renderWalletList();
-                    updateUI();
-                }
+            document.getElementById('newWalletNameInput').value = "";
+            document.getElementById('newWalletBalanceInput').value = "";
+            addWalletModal.classList.add('show');
+        });
+    }
+
+    if (closeAddWalletBtn) closeAddWalletBtn.addEventListener('click', closeAddWalletModal);
+    if (cancelAddWalletBtn) cancelAddWalletBtn.addEventListener('click', closeAddWalletModal);
+    if (addWalletModal) {
+        addWalletModal.addEventListener('click', (e) => {
+            if (e.target === addWalletModal) closeAddWalletModal();
+        });
+    }
+
+    if (saveAddWalletBtn) {
+        saveAddWalletBtn.addEventListener('click', () => {
+            const nameInput = document.getElementById('newWalletNameInput').value.trim();
+            const balanceInput = document.getElementById('newWalletBalanceInput').value;
+
+            if (nameInput === "") {
+                showIosNotice("Peringatan", "Nama dompet tidak boleh kosong!");
+                return;
             }
+
+            const cleanBalStr = balanceInput.replace(/\D/g, '');
+            const parsedBal = cleanBalStr === '' ? 0 : Number(cleanBalStr);
+
+            const newWallet = {
+                id: Date.now(),
+                name: nameInput,
+                balance: parsedBal
+            };
+
+            appState.wallets.push(newWallet);
+            saveData();
+            renderWalletList();
+            updateUI();
+            closeAddWalletModal();
         });
     }
 
@@ -618,7 +685,6 @@ function initEventListeners() {
                 wallet.balance -= totalDeduction;
                 appState.totalExpense += totalDeduction;
 
-                // Jika kategori Cicilan & Utang atau Smart Transfer, otomatis masukkan ke daftar Utang Header
                 if (categoryName.toLowerCase().includes('utang') || categoryName.toLowerCase().includes('cicilan') || type === 'transfer') {
                     appState.debts.push({
                         id: Date.now(),
@@ -851,6 +917,11 @@ function initEventListeners() {
     }
 }
 
+function closeAddWalletModal() {
+    const addWalletModal = document.getElementById('addWalletModal');
+    if (addWalletModal) addWalletModal.classList.remove('show');
+}
+
 // Render Hasil Pencarian Real-Time di Modal Search
 function renderSearchResults(keyword) {
     const container = document.getElementById('searchResultContainer');
@@ -994,7 +1065,7 @@ function showIosNotice(title, message) {
     document.getElementById('iosConfirmMessage').textContent = message;
     const okBtn = document.getElementById('iosConfirmOkBtn');
     okBtn.textContent = "OK";
-    okBtn.style.display = 'none'; // Sembunyikan tombol hapus/ok berlebih jika hanya notice
+    okBtn.style.display = 'none';
     pendingConfirmCallback = null;
     document.getElementById('iosConfirmModal').classList.add('show');
 }
