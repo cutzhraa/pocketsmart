@@ -5,8 +5,6 @@ import { Share } from '@capacitor/share';
 // Inisialisasi State Aplikasi (Versi 0 / Bersih dari awal)
 let appState = {
     balance: 0,
-    totalIncome: 0,
-    totalExpense: 0,
     isBalanceHidden: false,
     selectedMonth: new Date().getMonth(),
     selectedYear: new Date().getFullYear(),
@@ -42,16 +40,16 @@ const monthNames = [
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
 ];
 
+const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
 let activeEditWalletId = null;
 let activeEditCategoryId = null;
 let activeEditDebtId = null;
 let activeEditTargetId = null;
 let activeEditTrxId = null;
 
-// Variabel penampung aksi konfirmasi pop-up ala iOS
 let pendingConfirmCallback = null;
 
-// Jalankan saat halaman pertama kali dimuat
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
     initMonthSelector();
@@ -68,19 +66,27 @@ function initMonthSelector() {
 
     if (!dropdownMenu) return;
     dropdownMenu.innerHTML = '';
-    monthNames.forEach((month, index) => {
-        const item = document.createElement('div');
-        item.className = `dropdown-item ${index === appState.selectedMonth ? 'active' : ''}`;
-        item.textContent = `${month} ${appState.selectedYear}`;
-        item.addEventListener('click', () => {
-            appState.selectedMonth = index;
-            updateMonthLabel();
-            initMonthSelector();
-            dropdownMenu.classList.remove('show');
-            saveData();
-            updateUI();
+    
+    // Buat daftar pilihan bulan (misal rentang tahun saat ini dan tahun sebelumnya/sesudahnya)
+    const currentYear = new Date().getFullYear();
+    const years = [currentYear - 1, currentYear, currentYear + 1];
+
+    years.forEach(year => {
+        monthNames.forEach((month, index) => {
+            const item = document.createElement('div');
+            item.className = `dropdown-item ${index === appState.selectedMonth && year === appState.selectedYear ? 'active' : ''}`;
+            item.textContent = `${month} ${year}`;
+            item.addEventListener('click', () => {
+                appState.selectedMonth = index;
+                appState.selectedYear = year;
+                updateMonthLabel();
+                initMonthSelector();
+                dropdownMenu.classList.remove('show');
+                saveData();
+                updateUI();
+            });
+            dropdownMenu.appendChild(item);
         });
-        dropdownMenu.appendChild(item);
     });
 
     if (selectorBtn) {
@@ -104,12 +110,18 @@ function updateMonthLabel() {
     }
 }
 
-// Mengatur semua fungsi tombol (Event Listeners)
+// Filter transaksi berdasarkan bulan dan tahun yang sedang aktif
+function getFilteredTransactions() {
+    if (!appState.transactions) return [];
+    return appState.transactions.filter(t => {
+        const tDate = new Date(t.createdAt || t.id);
+        return tDate.getMonth() === appState.selectedMonth && tDate.getFullYear() === appState.selectedYear;
+    });
+}
+
 function initEventListeners() {
     const toggleBtn = document.getElementById('toggleBalance');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', toggleBalanceVisibility);
-    }
+    if (toggleBtn) toggleBtn.addEventListener('click', toggleBalanceVisibility);
 
     const settingsModal = document.getElementById('settingsModal');
     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -119,20 +131,15 @@ function initEventListeners() {
     const importFileinput = document.getElementById('importFileinput');
 
     if (closeSettingsBtn && settingsModal) {
-        closeSettingsBtn.addEventListener('click', () => {
-            settingsModal.classList.remove('show');
-        });
+        closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('show'));
     }
-
     if (settingsModal) {
         settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) {
-                settingsModal.classList.remove('show');
-            }
+            if (e.target === settingsModal) settingsModal.classList.remove('show');
         });
     }
 
-    // Logika Modal Pencarian
+    // Modal Pencarian
     const searchHeaderBtn = document.getElementById('searchHeaderBtn');
     const searchModal = document.getElementById('searchModal');
     const closeSearchBtn = document.getElementById('closeSearchBtn');
@@ -146,26 +153,17 @@ function initEventListeners() {
             if (searchInput) searchInput.focus();
         });
     }
-
-    if (closeSearchBtn && searchModal) {
-        closeSearchBtn.addEventListener('click', () => {
-            searchModal.classList.remove('show');
-        });
-    }
-
+    if (closeSearchBtn && searchModal) closeSearchBtn.addEventListener('click', () => searchModal.classList.remove('show'));
     if (searchModal) {
         searchModal.addEventListener('click', (e) => {
             if (e.target === searchModal) searchModal.classList.remove('show');
         });
     }
-
     if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            renderSearchResults(e.target.value.trim());
-        });
+        searchInput.addEventListener('input', (e) => renderSearchResults(e.target.value.trim()));
     }
 
-    // Tombol Reset Data
+    // Reset Data
     if (resetDataBtn) {
         resetDataBtn.addEventListener('click', () => {
             showIosAlert(
@@ -176,8 +174,6 @@ function initEventListeners() {
                     localStorage.removeItem('pocketsmart_data');
                     appState = {
                         balance: 0,
-                        totalIncome: 0,
-                        totalExpense: 0,
                         isBalanceHidden: false,
                         selectedMonth: new Date().getMonth(),
                         selectedYear: new Date().getFullYear(),
@@ -214,7 +210,7 @@ function initEventListeners() {
         });
     }
 
-    // Tombol Ekspor Data
+    // Ekspor Data
     if (exportDataBtn) {
         exportDataBtn.addEventListener('click', () => {
             settingsModal.classList.remove('show');
@@ -234,14 +230,12 @@ function initEventListeners() {
                                 directory: Directory.Documents,
                                 encoding: 'utf8'
                             });
-
                             await Share.share({
                                 title: 'Cadangan PocketSmart',
                                 text: 'File cadangan data keuangan PocketSmart',
                                 url: result.uri,
                                 dialogTitle: 'Simpan File Backup'
                             });
-
                             showIosNotice("Berhasil", "File backup berhasil dibuat.");
                         } else {
                             const blob = new Blob([dataStr], { type: 'application/json' });
@@ -263,7 +257,7 @@ function initEventListeners() {
         });
     }
 
-    // Tombol Pulihkan Data
+    // Pulihkan Data
     if (importDataBtn && importFileinput) {
         importDataBtn.addEventListener('click', () => importFileinput.click());
         importFileinput.addEventListener('change', (e) => {
@@ -300,7 +294,7 @@ function initEventListeners() {
         });
     }
 
-    // Logika Modal Dompet
+    // Modal Dompet
     const menuWallet = document.getElementById('menuWallet');
     const walletModal = document.getElementById('walletModal');
     const closeWalletBtn = document.getElementById('closeWalletBtn');
@@ -319,7 +313,6 @@ function initEventListeners() {
         });
     }
 
-    // Tambah Dompet
     const addWalletModal = document.getElementById('addWalletModal');
     const closeAddWalletBtn = document.getElementById('closeAddWalletBtn');
     const cancelAddWalletBtn = document.getElementById('cancelAddWalletBtn');
@@ -348,9 +341,7 @@ function initEventListeners() {
                 showIosNotice("Peringatan", "Nama dompet tidak boleh kosong!");
                 return;
             }
-            const cleanBalStr = balanceInput.replace(/\D/g, '');
-            const parsedBal = cleanBalStr === '' ? 0 : Number(cleanBalStr);
-
+            const parsedBal = Number(balanceInput.replace(/\D/g, '')) || 0;
             appState.wallets.push({ id: Date.now(), name: nameInput, balance: parsedBal });
             saveData();
             renderWalletList();
@@ -359,7 +350,7 @@ function initEventListeners() {
         });
     }
 
-    // Logika Modal Kategori
+    // Modal Kategori
     const menuCategory = document.getElementById('menuCategory');
     const categoryModal = document.getElementById('categoryModal');
     const closeCategoryBtn = document.getElementById('closeCategoryBtn');
@@ -379,7 +370,6 @@ function initEventListeners() {
     }
     if (addCategoryBtn) addCategoryBtn.addEventListener('click', () => openCategoryFormModal(null));
 
-    // Form Kategori
     const formCategoryModal = document.getElementById('formCategoryModal');
     const closeFormCategoryBtn = document.getElementById('closeFormCategoryBtn');
     const cancelFormCategoryBtn = document.getElementById('cancelFormCategoryBtn');
@@ -413,7 +403,7 @@ function initEventListeners() {
         });
     }
 
-    // Logika Modal Utang & Piutang
+    // Modal Utang
     const menuDebt = document.getElementById('menuDebt');
     const debtModal = document.getElementById('debtModal');
     const closeDebtBtn = document.getElementById('closeDebtBtn');
@@ -433,7 +423,6 @@ function initEventListeners() {
     }
     if (addDebtBtn) addDebtBtn.addEventListener('click', () => openDebtFormModal(null));
 
-    // Form Utang
     const formDebtModal = document.getElementById('formDebtModal');
     const closeFormDebtBtn = document.getElementById('closeFormDebtBtn');
     const cancelFormDebtBtn = document.getElementById('cancelFormDebtBtn');
@@ -456,8 +445,7 @@ function initEventListeners() {
                 showIosNotice("Peringatan", "Nama kontak tidak boleh kosong!");
                 return;
             }
-            const cleanAmtStr = amountInput.replace(/\D/g, '');
-            const parsedAmt = cleanAmtStr === '' ? 0 : Number(cleanAmtStr);
+            const parsedAmt = Number(amountInput.replace(/\D/g, '')) || 0;
 
             if (activeEditDebtId === null) {
                 appState.debts.push({ id: Date.now(), type: typeInput, person: personInput, amount: parsedAmt });
@@ -471,7 +459,7 @@ function initEventListeners() {
         });
     }
 
-    // Logika Modal Target
+    // Modal Target
     const menuTarget = document.getElementById('menuTarget');
     const targetModal = document.getElementById('targetModal');
     const closeTargetBtn = document.getElementById('closeTargetBtn');
@@ -491,7 +479,6 @@ function initEventListeners() {
     }
     if (addTargetBtn) addTargetBtn.addEventListener('click', () => openTargetFormModal(null));
 
-    // Form Target
     const formTargetModal = document.getElementById('formTargetModal');
     const closeFormTargetBtn = document.getElementById('closeFormTargetBtn');
     const cancelFormTargetBtn = document.getElementById('cancelFormTargetBtn');
@@ -529,7 +516,7 @@ function initEventListeners() {
         });
     }
 
-    // Logika Analisis
+    // Modal Analisis
     const menuAnalytics = document.getElementById('menuAnalytics');
     const analyticsModal = document.getElementById('analyticsModal');
     const closeAnalyticsBtn = document.getElementById('closeAnalyticsBtn');
@@ -547,12 +534,10 @@ function initEventListeners() {
         });
     }
 
-    // ==========================================
-    // ACTION SHEET DROPDOWN ALA IOS (UNTUK FORM TRANSAKSI)
-    // ==========================================
+    // Action Sheet Dropdowns
     setupActionSheetDropdowns();
 
-    // Logika Form Transaksi
+    // Form Transaksi
     const formTransactionModal = document.getElementById('formTransactionModal');
     const closeFormTrxBtn = document.getElementById('closeFormTrxBtn');
     const cancelFormTrxBtn = document.getElementById('cancelFormTrxBtn');
@@ -589,33 +574,33 @@ function initEventListeners() {
             const category = appState.categories.find(c => c.id === categoryId);
             const categoryName = category ? category.name : "Umum";
 
+            const now = new Date();
+            const formattedDateStr = `${dayNames[now.getDay()]}, ${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()} • ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
             if (activeEditTrxId === null) {
-                // Tambah Transaksi Baru
                 if (type === 'expense') {
                     if (wallet.balance < amount) {
                         showIosNotice("Saldo Tidak Cukup", `Saldo dompet "${wallet.name}" tidak mencukupi!`);
                         return;
                     }
                     wallet.balance -= amount;
-                    appState.totalExpense += amount;
                 } else if (type === 'income') {
                     wallet.balance += amount;
-                    appState.totalIncome += amount;
                 }
 
                 const newTrx = {
                     id: Date.now(),
+                    createdAt: now.getTime(),
                     type: type,
                     walletId: wallet.id,
                     walletName: wallet.name,
                     categoryName: categoryName,
                     amount: amount,
                     note: note === "" ? categoryName : note,
-                    date: `${new Date().getDate()} ${monthNames[appState.selectedMonth]} ${appState.selectedYear}`
+                    date: formattedDateStr
                 };
                 appState.transactions.unshift(newTrx);
             } else {
-                // Edit Transaksi (Kembalikan saldo lama dulu, lalu terapkan nominal baru)
                 const oldTrx = appState.transactions.find(t => t.id === activeEditTrxId);
                 if (oldTrx) {
                     const oldWallet = appState.wallets.find(w => w.id === oldTrx.walletId);
@@ -623,27 +608,19 @@ function initEventListeners() {
                         if (oldTrx.type === 'expense') oldWallet.balance += oldTrx.amount;
                         else if (oldTrx.type === 'income') oldWallet.balance -= oldTrx.amount;
                     }
-                    if (oldTrx.type === 'expense') appState.totalExpense -= oldTrx.amount;
-                    else if (oldTrx.type === 'income') appState.totalIncome -= oldTrx.amount;
 
-                    // Terapkan data baru
                     if (type === 'expense') {
                         if (wallet.balance < amount) {
                             showIosNotice("Saldo Tidak Cukup", `Saldo dompet "${wallet.name}" tidak mencukupi!`);
-                            // Kembalikan saldo lama jika gagal
                             if (oldWallet) {
                                 if (oldTrx.type === 'expense') oldWallet.balance -= oldTrx.amount;
                                 else if (oldTrx.type === 'income') oldWallet.balance += oldTrx.amount;
                             }
-                            if (oldTrx.type === 'expense') appState.totalExpense += oldTrx.amount;
-                            else if (oldTrx.type === 'income') appState.totalIncome += oldTrx.amount;
                             return;
                         }
                         wallet.balance -= amount;
-                        appState.totalExpense += amount;
                     } else if (type === 'income') {
                         wallet.balance += amount;
-                        appState.totalIncome += amount;
                     }
 
                     oldTrx.type = type;
@@ -661,7 +638,7 @@ function initEventListeners() {
         });
     }
 
-    // Logika Modal Daftar Semua Transaksi
+    // Modal Semua Transaksi
     const transactionModal = document.getElementById('transactionModal');
     const closeTrxModalBtn = document.getElementById('closeTrxModalBtn');
     const seeAllTrxBtn = document.getElementById('seeAllTrxBtn');
@@ -715,7 +692,7 @@ function initEventListeners() {
         });
     });
 
-    // Bottom Navigation & FAB
+    // Navigasi Bawah & FAB
     const navHomeBtn = document.getElementById('navHomeBtn');
     const navTrxBtn = document.getElementById('navTrxBtn');
     const navCalcBtn = document.getElementById('navCalcBtn');
@@ -756,7 +733,6 @@ function initEventListeners() {
         fabAddBtn.addEventListener('click', () => openTrxFormModal(null));
     }
 
-    // Edit Dompet
     const editWalletModal = document.getElementById('editWalletModal');
     const closeEditWalletBtn = document.getElementById('closeEditWalletBtn');
     const cancelEditWalletBtn = document.getElementById('cancelEditWalletBtn');
@@ -791,7 +767,6 @@ function initEventListeners() {
         });
     }
 
-    // iOS Alert / Confirm
     const iosConfirmCancelBtn = document.getElementById('iosConfirmCancelBtn');
     const iosConfirmOkBtn = document.getElementById('iosConfirmOkBtn');
     const iosConfirmModal = document.getElementById('iosConfirmModal');
@@ -819,7 +794,7 @@ function initEventListeners() {
     }
 }
 
-// Inisialisasi Action Sheet Dropdown ala iOS untuk Form Transaksi
+// Action Sheet Dropdowns
 function setupActionSheetDropdowns() {
     const actionSheetModal = document.getElementById('iosActionSheetModal');
     const actionSheetContainer = document.getElementById('actionSheetOptionsContainer');
@@ -832,7 +807,6 @@ function setupActionSheetDropdowns() {
         });
     }
 
-    // 1. Dropdown Tipe Transaksi
     const selectTrxTypeBtn = document.getElementById('selectTrxTypeBtn');
     if (selectTrxTypeBtn) {
         selectTrxTypeBtn.addEventListener('click', () => {
@@ -857,7 +831,6 @@ function setupActionSheetDropdowns() {
         });
     }
 
-    // 2. Dropdown Dompet
     const selectTrxWalletBtn = document.getElementById('selectTrxWalletBtn');
     if (selectTrxWalletBtn) {
         selectTrxWalletBtn.addEventListener('click', () => {
@@ -881,7 +854,6 @@ function setupActionSheetDropdowns() {
         });
     }
 
-    // 3. Dropdown Kategori
     const selectTrxCategoryBtn = document.getElementById('selectTrxCategoryBtn');
     if (selectTrxCategoryBtn) {
         selectTrxCategoryBtn.addEventListener('click', () => {
@@ -911,7 +883,6 @@ function closeAddWalletModal() {
     if (addWalletModal) addWalletModal.classList.remove('show');
 }
 
-// Render Hasil Pencarian Real-Time
 function renderSearchResults(keyword) {
     const container = document.getElementById('searchResultContainer');
     if (!container) return;
@@ -956,7 +927,6 @@ function renderSearchResults(keyword) {
     });
 }
 
-// Buka Form Transaksi (Tambah / Edit)
 function openTrxFormModal(trxId = null) {
     activeEditTrxId = trxId;
     const titleEl = document.getElementById('formTrxTitle');
@@ -1035,18 +1005,20 @@ function populateTrxCategories(type) {
     catText.textContent = filtered[0].name;
 }
 
-// Render Daftar Semua Transaksi dengan Fitur Swipe (Edit / Hapus)
+// Render Semua Transaksi Berdasarkan Bulan Aktif dengan Gestur Swipe
 function renderFullTransactions() {
     const container = document.getElementById('fullTransactionListContainer');
     if (!container) return;
 
-    if (!appState.transactions || appState.transactions.length === 0) {
-        container.innerHTML = `<div style="text-align: center; color: var(--ios-sublabel); font-size: 13px; padding: 20px 0;">Belum ada transaksi tercatat.</div>`;
+    const currentFilteredTrx = getFilteredTransactions();
+
+    if (!currentFilteredTrx || currentFilteredTrx.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--ios-sublabel); font-size: 13px; padding: 20px 0;">Belum ada transaksi di bulan ini.</div>`;
         return;
     }
 
     container.innerHTML = '';
-    appState.transactions.forEach(trx => {
+    currentFilteredTrx.forEach(trx => {
         const isIncome = trx.type === 'income';
         const amountColor = isIncome ? 'var(--ios-green)' : 'var(--ios-red)';
         const sign = isIncome ? '+' : '-';
@@ -1059,7 +1031,8 @@ function renderFullTransactions() {
             <div class="wallet-item-card" data-id="${trx.id}" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h4 class="trx-item-title" style="font-size: 14px; font-weight: 500;">${trx.note}</h4>
-                    <p class="trx-item-subtitle" style="font-size: 12px; color: var(--ios-sublabel); margin-top: 1px;">${trx.walletName} • ${trx.categoryName} • ${trx.date}</p>
+                    <p class="trx-item-subtitle" style="font-size: 11px; color: var(--ios-sublabel); margin-top: 2px;">${trx.walletName} • ${trx.categoryName}</p>
+                    <p style="font-size: 10px; color: var(--ios-sublabel); margin-top: 1px;">🕒 ${trx.date}</p>
                 </div>
                 <div class="trx-item-amount" style="font-size: 14px; font-weight: 600; color: ${amountColor};">${sign}Rp ${trx.amount.toLocaleString('id-ID')}</div>
             </div>
@@ -1067,7 +1040,6 @@ function renderFullTransactions() {
         container.appendChild(wrapper);
     });
 
-    // Event swipe untuk transaksi
     container.querySelectorAll('.wallet-item-card').forEach(card => {
         let startX = 0;
         const id = Number(card.getAttribute('data-id'));
@@ -1120,8 +1092,6 @@ function triggerDeleteTransaction(id) {
                     if (trx.type === 'expense') wallet.balance += trx.amount;
                     else if (trx.type === 'income') wallet.balance -= trx.amount;
                 }
-                if (trx.type === 'expense') appState.totalExpense -= trx.amount;
-                else if (trx.type === 'income') appState.totalIncome -= trx.amount;
 
                 appState.transactions = appState.transactions.filter(t => t.id !== id);
                 saveData();
@@ -1132,7 +1102,6 @@ function triggerDeleteTransaction(id) {
     );
 }
 
-// Fungsi Pop-up Konfirmasi iOS
 function showIosAlert(title, message, okText, onOkCallback) {
     document.getElementById('iosConfirmTitle').textContent = title;
     document.getElementById('iosConfirmMessage').textContent = message;
@@ -1157,31 +1126,40 @@ function showIosNotice(title, message) {
     document.getElementById('iosConfirmModal').classList.add('show');
 }
 
-// Perbarui Data Analisis
+// Analisis Berdasarkan Bulan Aktif
 function updateAnalyticsData() {
     const incomeEl = document.getElementById('analyticIncome');
     const expenseEl = document.getElementById('analyticExpense');
     const netEl = document.getElementById('analyticNet');
     const statusTextEl = document.getElementById('analyticStatusText');
 
-    if (incomeEl) incomeEl.textContent = "+Rp " + appState.totalIncome.toLocaleString('id-ID');
-    if (expenseEl) expenseEl.textContent = "-Rp " + appState.totalExpense.toLocaleString('id-ID');
+    const filteredTrx = getFilteredTransactions();
+    let monthIncome = 0;
+    let monthExpense = 0;
+
+    filteredTrx.forEach(t => {
+        if (t.type === 'income') monthIncome += t.amount;
+        else if (t.type === 'expense') monthExpense += t.amount;
+    });
+
+    if (incomeEl) incomeEl.textContent = "+Rp " + monthIncome.toLocaleString('id-ID');
+    if (expenseEl) expenseEl.textContent = "-Rp " + monthExpense.toLocaleString('id-ID');
     
-    const net = appState.totalIncome - appState.totalExpense;
+    const net = monthIncome - monthExpense;
     if (netEl) {
         netEl.textContent = (net >= 0 ? "+Rp " : "-Rp ") + Math.abs(net).toLocaleString('id-ID');
         netEl.style.color = net >= 0 ? "var(--ios-green)" : "var(--ios-red)";
     }
 
     if (statusTextEl) {
-        if (appState.totalIncome === 0 && appState.totalExpense === 0) {
-            statusTextEl.textContent = "Belum ada transaksi tercatat di bulan ini.";
+        if (monthIncome === 0 && monthExpense === 0) {
+            statusTextEl.textContent = `Belum ada transaksi tercatat di ${monthNames[appState.selectedMonth]} ${appState.selectedYear}.`;
         } else if (net > 0) {
-            statusTextEl.textContent = "Kondisi keuanganmu sehat! Arus kas bulan ini surplus.";
+            statusTextEl.textContent = `Kondisi keuanganmu sehat di bulan ini! Arus kas surplus.`;
         } else if (net < 0) {
-            statusTextEl.textContent = "Perhatian! Arus kas bulan ini defisit (pengeluaran lebih besar dari pemasukan).";
+            statusTextEl.textContent = `Perhatian! Arus kas bulan ini defisit (pengeluaran lebih besar dari pemasukan).`;
         } else {
-            statusTextEl.textContent = "Arus kas stabil.";
+            statusTextEl.textContent = `Arus kas stabil.`;
         }
     }
 }
@@ -1553,6 +1531,7 @@ function toggleBalanceVisibility() {
     updateUI();
 }
 
+// Update UI Utama & Halaman Home Sesuai Bulan Aktif
 function updateUI() {
     let totalBal = 0;
     if (appState.wallets && appState.wallets.length > 0) {
@@ -1565,16 +1544,25 @@ function updateUI() {
     const expenseElement = document.getElementById('expenseAmount');
     const transactionListContainer = document.getElementById('transactionList');
 
+    const filteredTrx = getFilteredTransactions();
+    let monthIncome = 0;
+    let monthExpense = 0;
+
+    filteredTrx.forEach(t => {
+        if (t.type === 'income') monthIncome += t.amount;
+        else if (t.type === 'expense') monthExpense += t.amount;
+    });
+
     if (balanceElement) balanceElement.textContent = appState.isBalanceHidden ? "Rp •••••••" : "Rp " + appState.balance.toLocaleString('id-ID');
-    if (incomeElement) incomeElement.textContent = appState.isBalanceHidden ? "+Rp •••••••" : "+Rp " + appState.totalIncome.toLocaleString('id-ID');
-    if (expenseElement) expenseElement.textContent = appState.isBalanceHidden ? "-Rp •••••••" : "-Rp " + appState.totalExpense.toLocaleString('id-ID');
+    if (incomeElement) incomeElement.textContent = appState.isBalanceHidden ? "+Rp •••••••" : "+Rp " + monthIncome.toLocaleString('id-ID');
+    if (expenseElement) expenseElement.textContent = appState.isBalanceHidden ? "-Rp •••••••" : "-Rp " + monthExpense.toLocaleString('id-ID');
 
     if (transactionListContainer) {
-        if (appState.transactions.length === 0) {
-            transactionListContainer.innerHTML = `<div class="empty-state" style="text-align: center; padding: 25px 0; color: #8e8e93; font-size: 13px;">Belum ada transaksi tercatat</div>`;
+        if (filteredTrx.length === 0) {
+            transactionListContainer.innerHTML = `<div class="empty-state" style="text-align: center; padding: 25px 0; color: #8e8e93; font-size: 13px;">Belum ada transaksi di bulan ini</div>`;
         } else {
             transactionListContainer.innerHTML = '';
-            const recentTrx = appState.transactions.slice(0, 3);
+            const recentTrx = filteredTrx.slice(0, 3);
             
             recentTrx.forEach(trx => {
                 const isIncome = trx.type === 'income';
@@ -1589,7 +1577,8 @@ function updateUI() {
                     <div class="wallet-item-card" data-id="${trx.id}" style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 class="trx-item-title" style="font-size: 14px; font-weight: 500;">${trx.note}</h4>
-                            <p class="trx-item-subtitle" style="font-size: 12px; color: var(--ios-sublabel); margin-top: 1px;">${trx.walletName} • ${trx.categoryName}</p>
+                            <p class="trx-item-subtitle" style="font-size: 11px; color: var(--ios-sublabel); margin-top: 2px;">${trx.walletName} • ${trx.categoryName}</p>
+                            <p style="font-size: 10px; color: var(--ios-sublabel); margin-top: 1px;">🕒 ${trx.date}</p>
                         </div>
                         <div class="trx-item-amount" style="font-size: 14px; font-weight: 600; color: ${amountColor};">${sign}Rp ${trx.amount.toLocaleString('id-ID')}</div>
                     </div>
@@ -1597,7 +1586,6 @@ function updateUI() {
                 transactionListContainer.appendChild(wrapper);
             });
 
-            // Tambahkan event swipe untuk transaksi di Home
             transactionListContainer.querySelectorAll('.wallet-item-card').forEach(card => {
                 let startX = 0;
                 const id = Number(card.getAttribute('data-id'));

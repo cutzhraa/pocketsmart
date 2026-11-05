@@ -81,8 +81,9 @@
             </div>
 
             <!-- Transaksi Terbaru -->
-            <div class="section-header" style="margin-top: 10px;">
+            <div class="section-header" style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
                 <h3>Terbaru</h3>
+                <span id="seeAllTrxBtn" style="font-size: 13px; color: var(--ios-blue); cursor: pointer; font-weight: 500;">Lihat Semua</span>
             </div>
 
             <div class="transaction-list" id="transactionList">
@@ -191,7 +192,7 @@
         .ios-calc-orange { background: #ff9f0a; color: #ffffff; font-size: 26px; }
     </style>
 
-    <!-- Modal / Pop-up Daftar Transaksi -->
+    <!-- Modal / Pop-up Daftar Semua Transaksi (Dengan Ruang Waktu/Jam) -->
     <div class="modal-overlay" id="transactionModal">
         <div class="ios-modal">
             <div class="modal-header">
@@ -207,7 +208,7 @@
         </div>
     </div>
 
-    <!-- Modal / Pop-up Form Tambah Transaksi (Dropdown Ala iOS) -->
+    <!-- Modal / Pop-up Form Tambah Transaksi -->
     <div class="modal-overlay" id="formTransactionModal">
         <div class="ios-modal">
             <div class="modal-header">
@@ -294,7 +295,7 @@
         </div>
     </div>
 
-    <!-- Modal / Pop-up Tambah Dompet Baru (Gaya iOS) -->
+    <!-- Modal / Pop-up Tambah Dompet Baru -->
     <div class="modal-overlay" id="addWalletModal">
         <div class="ios-modal">
             <div class="modal-header">
@@ -495,7 +496,7 @@
         </div>
     </div>
 
-    <!-- Custom iOS Action Sheet Pop-up (Untuk Dropdown Ala iOS) -->
+    <!-- Custom iOS Action Sheet Pop-up -->
     <div class="ios-action-sheet-overlay" id="iosActionSheetModal">
         <div class="ios-action-sheet">
             <div class="ios-action-sheet-group" id="actionSheetOptionsContainer"></div>
