@@ -6,11 +6,12 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
     - name: Checkout Code
@@ -32,15 +33,38 @@ jobs:
         npm install
         npx cap sync android
 
-    - name: Build Debug APK with Gradle
+    # --- BAGIAN BARU: GENERATE & GANTI IKON ALA IOS OTOMATIS ---
+    # Langkah ini hanya dijalankan saat lu membuat Git Tag (misal v1.0.0)
+    - name: Apply iOS-style Icon (Release Only)
+      if: startsWith(github.ref, 'refs/tags/v')
+      shell: bash
+      run: |
+        echo "Downloading iOS-style icon asset..."
+        # Download gambar placeholder icon ala ios (biru gradien dengan $)
+        curl -L -o ios_icon.png https://raw.githubusercontent.com/cutzhraa/pocketsmart/main/assets/icon_ios_style.png || echo "Warning: Default icon asset download failed. Using local fallback if exists."
+
+        # Hapus ikon Android lama dan ganti dengan ikon baru (hanya jika file berhasil didownload)
+        if [ -f ios_icon.png ]; then
+          echo "Replacing Android app icons with iOS-style..."
+          # Menimpa ikon di folder drawable (untuk Android)
+          find android/app/src/main/res -name "ic_launcher.png" -exec cp ios_icon.png {} \; || echo "Warning: Icon replacement failed for drawable folder."
+          find android/app/src/main/res -name "ic_launcher_round.png" -exec cp ios_icon.png {} \; || echo "Warning: Icon replacement failed for round folder."
+          echo "Icon replaced successfully."
+        else
+          echo "Error: iOS icon asset missing. Build will use Capacitor default icon."
+        fi
+    # -------------------------------------------------------------
+
+    - name: Build APK with Gradle
       working-directory: ./android
       run: |
         chmod +x gradlew
-        ./gradlew assembleDebug
+        ./gradlew assembleDebug # Biarin namanya tetap debug dulu buat test
 
     - name: Rename APK File
       run: |
         mkdir -p output
+        # Lu bisa ganti nama file outputnya di sini
         cp android/app/build/outputs/apk/debug/app-debug.apk output/pocketsmart-release.apk
 
     - name: Upload APK to Artifacts

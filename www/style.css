@@ -19,28 +19,32 @@
 }
 
 body {
-    background-color: #121212;
+    background-color: var(--ios-bg); /* Ubah jadi hitam legam polos */
     color: var(--ios-label);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 /* Bungkus ala Layar iPhone */
 .app-container {
     width: 100%;
-    max-width: 390px;
     height: 100vh;
-    max-height: 844px;
+    height: 100dvh; /* Mendukung tinggi dinamis layar HP modern */
+    max-width: 100%;
+    max-height: none;
     background-color: var(--ios-bg);
     display: flex;
     flex-direction: column;
     position: relative;
     overflow-y: auto;
-    border-radius: 40px;
-    border: 8px solid #2c2c2e;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    border-radius: 0; /* Menghilangkan sudut melengkung bingkai */
+    border: none;     /* Menghilangkan garis border luar */
+    box-shadow: none; /* Menghilangkan bayangan bingkai */
 }
 
 .app-container::-webkit-scrollbar {
@@ -657,17 +661,17 @@ body {
 
 /* Bottom Nav */
 .bottom-nav {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    right: 8px;
+    position: fixed; /* Ubah dari absolute ke fixed agar menempel di bawah layar HP */
+    bottom: 0;
+    left: 0;
+    right: 0;
     height: 75px;
     background: rgba(28, 28, 30, 0.85);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
     border-top: 0.5px solid var(--ios-separator);
-    border-bottom-left-radius: 32px;
-    border-bottom-right-radius: 32px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     display: flex;
     justify-content: space-around;
     align-items: flex-start;
