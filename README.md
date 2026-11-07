@@ -19,5 +19,15 @@ git clone https://github.com/cutzhraa/pocketsmart.git
 
 2. Masuk ke direktori project dan buka file `index.html` menggunakan browser atau jalankan melalui live server.
 
+## 📲 Download Aplikasi
+
+Download dan instal PocketSmart untuk Android melalui link berikut:
+
+[⬇️ Download PocketSmart APK](https://github.com/cutzhraa/pocketsmart/releases/latest)
+
+## 💻 Source Code
+
+Lihat source code dan proses pengembangan aplikasi di repository ini.
+
 ## Lisensi
 Distributed under the MIT License.
